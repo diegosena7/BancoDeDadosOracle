@@ -246,3 +246,16 @@ group by f.cpf, f.matricula, f.imposto, v.data_admissao;
 select v.nome, v.bairro, c.nome, c.bairro
 from vw_vendedores v full join tabela_de_clientes c on v.bairro = c.bairro;
 
+--Funções de Strings
+select nome, UPPER(nome) from tabela_de_clientes;-- Transforma em maiúscula
+select nome, LOWER(nome) from tabela_de_clientes;-- Transforma em minúscula
+select nome_do_produto, initcap(nome_do_produto) from tabela_de_produtos;-- Transforma a ŕimeira letra da palavra com letra maiúscula
+select CONCAT(endereco_1, bairro) from tabela_de_clientes;-- Concatena strings
+-- Concatenação com pipes para juntar os dados da tabela
+select nome, 'Endereço: ' || endereco_1 || ' ' || bairro || ' ' || cidade ||  ' ' || estado || ', CEP: ' || cep as Endereço from tabela_de_clientes;
+--Substr recorta a string receb como parâmetro o indice da letra a ser recortada
+select nome_do_produto, SUBSTR(nome_do_produto, 3, 8) from tabela_de_produtos;
+--Instr informa a posição do arâmetro informado
+select nome_do_produto, INSTR(nome_do_produto, 'a') from tabela_de_produtos;
+--Replace serve para substituir caracter ou palavras 
+select nome_do_produto, replace(nome_do_produto, 'Litro', 'L') from tabela_de_produtos;
