@@ -259,3 +259,161 @@ select nome_do_produto, SUBSTR(nome_do_produto, 3, 8) from tabela_de_produtos;
 select nome_do_produto, INSTR(nome_do_produto, 'a') from tabela_de_produtos;
 --Replace serve para substituir caracter ou palavras 
 select nome_do_produto, replace(nome_do_produto, 'Litro', 'L') from tabela_de_produtos;
+
+-- Trabalhando com Datas
+/*O Oracle armazena as datas num formato nnumérico com 7 bytes na seguinte ordem: Ano, Mês, Dia, Horas, Minutos e Segundos
+A parte inteira do número corresponde a ano+mes+dia e a parte decimal corresponde a horas+minutos+segundos
+Podemos utilizar a função TO_CHAR() para alterar o formato de saída em string de acorodo com a fornatação inserida na função.
+Funções mais usadas: Months_Between, Add_Months, Next_Day, Last_Day, Trunc, Round.*/
+select sysdate from dual;
+select to_char(sysdate, 'DD MM YYYY HH:MM:SS') from dual;
+select sysdate + 5 from dual;-- adiciona 5 dias a data atual
+select sysdate - 5 from dual;-- diminui 5 dias da data atual
+select MONTHS_BETWEEN(SYSDATE, TO_DATE('2021/01/01', 'YYYY/MM/DD')) from dual;--retorna a qtidade de meses entre sysdate e o parâmetro (2021/01/01)
+select add_months(sysdate, 5) from dual;--adiciona meses ao sysdate
+select NEXT_DAY(SYSDATE, 'QUINTA') from dual;--retorna a próxima quinta feira do mês
+select LAST_DAY(SYSDATE) from dual;--retorna o último dia do mês
+select trunc(sysdate, 'MONTH') from dual;--retorna o primeiro dia do mês (o parâmetro mês pode ser ano ou dia)
+
+--Retorne a idade dos clientes
+select c.nome, MONTHS_BETWEEN(SYSDATE, c.data_de_nascimento)/12 as Idade_Clientes from tabela_de_clientes c;
+
+--Funções Matemárticas
+select ROUND(3.4) from dual;
+select ROUND(3.5) from dual;
+--A função TRUNC vai arredondar para baixo o valor do parâmetro.
+select trunc(3.4) from dual;
+select trunc(3.8) from dual;
+--A função CEIL é usada para arredondar um número para o número inteiro seguinte.
+select ceil(3.4) from dual;
+select ceil(3.8) from dual;
+--A função FLOOR la vai retornar sempre o número arredondado para baixo.
+select FLOOR(3.4) from dual;
+select FLOOR(3.8) from dual;
+--A função POWER retorna a potência indicada pelo segundo parâmetro.
+select POWER(10, 2) from dual;
+select POWER(10, 4) from dual;
+--A função SQRT serve para selecionarmos valores e automaticamente obter sua raiz quadrada.
+select SQRT(9) from dual;
+select SQRT(25) from dual;
+--A função ABS retorna o valor absoluto do parâmetro
+select ABS(25) from dual;
+select ABS(-25) from dual;
+--A função MOD retorna o resto da divisão do parâmetro
+select MOD(10, 6) from dual;
+select MOD(10, 5) from dual;
+--Calcule o valor do imposto pago no ano de 2016, arredondando para o menor inteiro.
+SELECT TO_CHAR(DATA_VENDA, 'YYYY') as ANO, FLOOR(SUM(IMPOSTO * (QUANTIDADE * PRECO))) as VALOR_IMPOSTO
+FROM NOTAS_FISCAIS NF
+INNER JOIN ITENS_NOTAS_FISCAIS INF ON NF.NUMERO = INF.NUMERO
+WHERE TO_CHAR(DATA_VENDA, 'YYYY') = 2016
+GROUP BY TO_CHAR(DATA_VENDA, 'YYYY');
+
+--Conversão de dados
+select to_date('16/05/2021', 'DD/MM/YYYY') from dual;
+select to_char(sysdate, 'MM/DD/YYYY HH12:MM:SS AM') from dual;
+select extract(month from to_date('12/11/2019', 'DD/MM/YYYY'))from dual;--extraindo o mês
+select extract(year from to_date('12/11/2019', 'DD/MM/YYYY'))from dual;--extraindo o ano
+select to_number('10') + 100 from dual;--converte o caracter em número e soma com 100
+select to_char(10, '00000') from dual;--cria uma máscara com 5 digitos
+--Usando o NVL
+select nvl(tabela_de_vendedores.nome, 'Vendedor NULL') as nomevendedor, 
+nvl(tabela_de_vendedores.bairro, 'Bairro Vendedor NULL') as bairrovendedor,
+nvl(tabela_de_clientes.nome, 'Cliente NULL') as nomecliente,
+nvl(tabela_de_clientes.bairro, 'Bairro Cliente NULL') as bairrocliente
+from tabela_de_vendedores full join tabela_de_clientes
+on tabela_de_vendedores.bairro = tabela_de_clientes.bairro;
+--Usando o GREATEST
+select c.volume_de_compra, c.limite_de_credito, greatest(c.volume_de_compra, c.limite_de_credito) as maior from tabela_de_clientes c;
+
+--Retorna o faturamento para cada cliente em 2016
+SELECT 'O cliente ' || TC.NOME || ' faturou ' || 
+TO_CHAR(ROUND(SUM(INF.QUANTIDADE * INF.preco),2)) || ' no ano de ' || TO_CHAR(DATA_VENDA, 'YYYY') AS SENTENCA 
+FROM notas_fiscais NF
+INNER JOIN ITENS_NOTAS_FISCAIS INF ON NF.NUMERO = INF.NUMERO
+INNER JOIN TABELA_DE_CLIENTES TC ON NF.CPF = TC.CPF
+WHERE TO_CHAR(DATA_VENDA, 'YYYY') = '2016'
+GROUP BY TC.NOME, TO_CHAR(DATA_VENDA, 'YYYY');
+
+--Exemplos
+SELECT NOME, UPPER(NOME) FROM TABELA_DE_CLIENTES;
+SELECT NOME, LOWER(NOME) FROM TABELA_DE_CLIENTES;
+SELECT NOME_DO_PRODUTO, INITCAP(NOME_DO_PRODUTO) FROM TABELA_DE_PRODUTOS;
+SELECT CONCAT(ENDERECO_1 || ' - ', BAIRRO) as "Endereco-Bairro" FROM TABELA_DE_CLIENTES;
+SELECT NOME, 'Endereço: ' || ENDERECO_1 || ' ' || BAIRRO || ' ' || CIDADE || ' ' || ESTADO || ', CEP: ' || CEP FROM TABELA_DE_CLIENTES;
+SELECT NOME_DO_PRODUTO, LPAD(NOME_DO_PRODUTO, 40, '*') as "Completa_Caracteres_Left" FROM TABELA_DE_PRODUTOS;
+SELECT NOME_DO_PRODUTO, RPAD(NOME_DO_PRODUTO, 60, '*') as "Completa_Caracteres_Right" FROM TABELA_DE_PRODUTOS;
+SELECT NOME_DO_PRODUTO, SUBSTR(NOME_DO_PRODUTO,3,5) as "Recorta_Strings" FROM TABELA_DE_PRODUTOS;
+SELECT NOME_DO_PRODUTO, INSTR(NOME_DO_PRODUTO, 'a') as "Posição do Parâmetro" FROM TABELA_DE_PRODUTOS;
+SELECT NOME_DO_PRODUTO, REPLACE(REPLACE(NOME_DO_PRODUTO, 'Litro', 'L'),'Ls','L') as "Substitui Caracteres" FROM TABELA_DE_PRODUTOS;
+
+select nf.cpf, to_char(nf.data_venda, 'MM/YYYY') as "Mes_Ano", SUM(inf.quantidade) as "Volume_Vendido" from notas_fiscais nf 
+inner join itens_notas_fiscais inf on nf.numero = inf.numero group by nf.cpf, to_char(nf.data_venda, 'MM/YYYY');
+
+--Relatório porcentagem de vendas sabor/ano
+SELECT
+    venda_sabor.sabor,
+    venda_sabor.ano,
+    venda_sabor.quantidade_vendida,
+    round(((venda_sabor.quantidade_vendida / total_venda.quantidade_vendida) * 100), 2) AS patricipacao
+FROM
+    (
+        SELECT
+            tp.sabor,
+            to_char(nf.data_venda, 'YYYY') AS ano,
+            SUM(inf.quantidade) AS quantidade_vendida
+        FROM
+            itens_notas_fiscais   inf
+            INNER JOIN tabela_de_produtos    tp ON inf.codigo_do_produto = tp.codigo_do_produto
+            INNER JOIN notas_fiscais         nf ON nf.numero = inf.numero
+        WHERE
+            to_char(nf.data_venda, 'YYYY') = '2016'
+        GROUP BY
+            to_char(nf.data_venda, 'YYYY'),
+            tp.sabor
+        ORDER BY
+            SUM(inf.quantidade) DESC
+    ) venda_sabor
+    INNER JOIN (
+        SELECT
+            to_char(nf.data_venda, 'YYYY') AS ano,
+            SUM(inf.quantidade) AS quantidade_vendida
+        FROM
+            itens_notas_fiscais   inf
+            INNER JOIN tabela_de_produtos    tp ON inf.codigo_do_produto = tp.codigo_do_produto
+            INNER JOIN notas_fiscais         nf ON nf.numero = inf.numero
+        WHERE
+            to_char(nf.data_venda, 'YYYY') = '2016'
+        GROUP BY
+            to_char(nf.data_venda, 'YYYY')
+        ORDER BY
+            SUM(inf.quantidade) DESC
+    ) total_venda ON venda_sabor.ano = total_venda.ano
+ORDER BY
+    venda_sabor.quantidade_vendida;
+
+--Relatório de vendas válidas/inválidas
+SELECT CADASTRO.CPF, CADASTRO.NOME, VENDAS.MES_ANO, CADASTRO.VOLUME_DE_COMPRA,
+VENDAS.VOLUME_VENDIDO AS VOLUME_LIMITE,
+CASE WHEN CADASTRO.VOLUME_DE_COMPRA <= VENDAS.VOLUME_VENDIDO THEN 'Vendas Válidas'
+ELSE 'Vendas Inválidas' END AS RESULTADO
+FROM (
+    SELECT NF.CPF, 
+    TO_CHAR(NF.DATA_VENDA, 'YYYY-MM') AS MES_ANO, 
+    SUM(INF.QUANTIDADE) AS VOLUME_VENDIDO 
+    FROM NOTAS_FISCAIS NF
+    INNER JOIN ITENS_NOTAS_FISCAIS INF ON NF.NUMERO = INF.NUMERO
+    GROUP BY NF.CPF, TO_CHAR(NF.DATA_VENDA, 'YYYY-MM')
+) VENDAS
+INNER JOIN (
+    SELECT CPF, NOME, VOLUME_DE_COMPRA FROM TABELA_DE_CLIENTES
+) CADASTRO
+ON VENDAS.CPF = CADASTRO.CPF
+WHERE VENDAS.MES_ANO = '2018-01';
+
+
+
+
+
+
+
